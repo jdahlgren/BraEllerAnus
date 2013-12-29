@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -27,7 +28,7 @@ public class BraEllerAnusActivity extends Activity {
 	Handler mHideHandler;
 	Runnable mHideRunnable;
 	Locale locale;
-
+	SharedPreferences settings;
 
 	
     /** Called when the activity is first created. */
@@ -35,10 +36,18 @@ public class BraEllerAnusActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        
+        settings = getSharedPreferences("prefs", 0);
+        String loc = settings.getString("savedLoc", Locale.getDefault().toString());
+
+        locale = new Locale(loc); 
+		Resources res = getResources(); 
+		DisplayMetrics dm = res.getDisplayMetrics(); 
+		Configuration conf = res.getConfiguration(); 
+		conf.locale = locale; 
+		res.updateConfiguration(conf, dm); 
                 
         setContentView(R.layout.main);
-        locale = Locale.getDefault();
         mHideHandler = new Handler();
         mHideRunnable = new Runnable() {
     		public void run() {
@@ -55,7 +64,7 @@ public class BraEllerAnusActivity extends Activity {
         	public void onSystemUiVisibilityChange(int visibility) {
         		if(visibility == 0){
         			getActionBar().show();
-        			mHideHandler.postDelayed(mHideRunnable, 3000);
+        			mHideHandler.postDelayed(mHideRunnable, 5000);
         		}		
 			}
 		});
@@ -70,7 +79,6 @@ public class BraEllerAnusActivity extends Activity {
         findViewById(R.id.imageButton1).setOnClickListener(braAnusButtonOnClickHandler);
         findViewById(R.id.imageButton1).setOnLongClickListener(braAnusButtonOnLongClickHandler);
     } 
-    
     
     View.OnClickListener braAnusButtonOnClickHandler = new View.OnClickListener() {    	
         public void onClick(View v) {        	
@@ -158,17 +166,15 @@ public class BraEllerAnusActivity extends Activity {
 	}	
 	
 	public void setLocale(String lang) { 
-		System.out.println(getResources().getConfiguration().locale);
-		System.out.println(lang);
 		if(!getResources().getConfiguration().locale.toString().startsWith(lang)){
-			locale = new Locale(lang); 
-			Resources res = getResources(); 
-			DisplayMetrics dm = res.getDisplayMetrics(); 
-			Configuration conf = res.getConfiguration(); 
-			conf.locale = locale; 
-			res.updateConfiguration(conf, dm); 
+			
 			Intent refresh = getIntent();
 			finish();
+			
+			settings = getSharedPreferences("prefs", 0);
+		    SharedPreferences.Editor editor = settings.edit();
+		    editor.putString("savedLoc", lang).commit();
+
 			startActivity(refresh); 
 		}
 		} 
