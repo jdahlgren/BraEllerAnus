@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="bra">#167432</color>
+    <color name="braBG">#22b14c</color>
+    <color name="anus">#ab0e15</color>
+    <color name="anusBG">#ed1c24</color>
+    <color name="braAnus">#fd0052</color>
+    <color name="braAnusBG">#ffaec9</color>
+</resources>

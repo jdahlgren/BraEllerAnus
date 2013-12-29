@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anus">ANUS!</string>
+    <string name="bra">GOOD!</string>
+    <string name="braAnus">GOOD ANUS!</string>
+    <string name="action_settings">Language</string>
+    <string name="pickLanguage">Choose language</string>
+</resources>
