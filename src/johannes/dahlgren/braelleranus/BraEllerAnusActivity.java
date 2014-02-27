@@ -1,7 +1,11 @@
 package johannes.dahlgren.braelleranus;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
+import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -9,12 +13,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import johannes.dahlgren.braelleranus.R;
 import johannes.dahlgren.braelleranus.R.color;
@@ -22,13 +30,16 @@ import johannes.dahlgren.braelleranus.R.string;
 
 public class BraEllerAnusActivity extends Activity {
 	
-	BigTextButton braAnusButton;
-	boolean id;
+	private BigTextButton braAnusButton;
+	private boolean id;
 	private View mDecorView;
-	Handler mHideHandler;
-	Runnable mHideRunnable;
-	Locale locale;
-	SharedPreferences settings;
+	private Handler mHideHandler;
+	private Runnable mHideRunnable;
+	private Locale locale;
+	private SharedPreferences settings;
+	private int currentapiVersion;
+	private boolean isMenuVisible;
+	private boolean longClickActive;
 
 	
     /** Called when the activity is first created. */
@@ -36,40 +47,49 @@ public class BraEllerAnusActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        
-        settings = getSharedPreferences("prefs", 0);
-        String loc = settings.getString("savedLoc", Locale.getDefault().toString());
-
-        locale = new Locale(loc); 
-		Resources res = getResources(); 
-		DisplayMetrics dm = res.getDisplayMetrics(); 
-		Configuration conf = res.getConfiguration(); 
-		conf.locale = locale; 
-		res.updateConfiguration(conf, dm); 
-                
-        setContentView(R.layout.main);
         mHideHandler = new Handler();
         mHideRunnable = new Runnable() {
     		public void run() {
     			hideSystemUI();
     		}
     	};
-        
-        mDecorView = getWindow().getDecorView();
-        hideSystemUI();
+    	
+    	mDecorView = getWindow().getDecorView();       
         getActionBar().hide();
-        
+        currentapiVersion = android.os.Build.VERSION.SDK_INT;
+        isMenuVisible = false;
+
+        hideSystemUI();
+
         mDecorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-			
+
         	public void onSystemUiVisibilityChange(int visibility) {
         		if(visibility == 0){
-        			getActionBar().show();
+        			//actionBar.show();
+        			isMenuVisible = true;
         			mHideHandler.postDelayed(mHideRunnable, 5000);
         		}		
-			}
-		});
+        	}
+        });       	
+
+        
+        //Handle Locale
+        settings = getSharedPreferences("prefs", 0);
+        String loc = settings.getString("savedLoc", Locale.getDefault().toString());
+        locale = new Locale(loc); 
+        
+		Resources res = getResources(); 
+		DisplayMetrics dm = res.getDisplayMetrics(); 
+		Configuration conf = res.getConfiguration(); 
+		conf.locale = locale; 
+		res.updateConfiguration(conf, dm); 
+		//End handle locale
+                
+        setContentView(R.layout.main);
+        
         
         id = true;
+        longClickActive = false;
         
         braAnusButton = (BigTextButton) (findViewById(R.id.imageButton1));
         braAnusButton.setBackgroundColor(getResources().getColor(color.braBG));
@@ -77,11 +97,16 @@ public class BraEllerAnusActivity extends Activity {
         braAnusButton.setTextColors(getResources().getColor(color.bra));
         
         findViewById(R.id.imageButton1).setOnClickListener(braAnusButtonOnClickHandler);
-        findViewById(R.id.imageButton1).setOnLongClickListener(braAnusButtonOnLongClickHandler);
+        findViewById(R.id.imageButton1).setOnTouchListener(braAnusButtonTouchHandler);
     } 
     
     View.OnClickListener braAnusButtonOnClickHandler = new View.OnClickListener() {    	
-        public void onClick(View v) {        	
+        public void onClick(View v) {     
+        	if(!isMenuVisible){
+        		if (currentapiVersion >= android.os.Build.VERSION_CODES.KITKAT){
+        			hideSystemUI();
+        		}
+        	}
         	if(id)
         	{
         		braAnusButton.setBackgroundColor(getResources().getColor(color.anusBG));
@@ -96,52 +121,67 @@ public class BraEllerAnusActivity extends Activity {
         	}        	
         	id=!id;
         }        
-    };
-    
-    View.OnLongClickListener braAnusButtonOnLongClickHandler = new View.OnLongClickListener() {		
-		public boolean onLongClick(View v) {
-			braAnusButton.setBackgroundColor(getResources().getColor(color.braAnusBG));
-			braAnusButton.setTexts(getResources().getText(string.braAnus));
-			braAnusButton.setTextColors(getResources().getColor(color.braAnus));
-			id=!id;
-			return false;
+    };    
+   
+	View.OnTouchListener braAnusButtonTouchHandler = new View.OnTouchListener() {
+		private static final int MIN_CLICK_DURATION = 1000;
+	    private long startClickTime;
+		
+		public boolean onTouch(View v, MotionEvent event) {			
+			switch (event.getAction()) {
+	        case MotionEvent.ACTION_UP:
+	            longClickActive = false;
+	            break;
+	        case MotionEvent.ACTION_DOWN:
+	            if (longClickActive == false) {
+	                longClickActive = true;
+	                startClickTime = Calendar.getInstance().getTimeInMillis();
+	            }
+	            break;
+	        case MotionEvent.ACTION_MOVE:
+	            if (longClickActive == true) {
+	            	long clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+	            	if(event.getPointerCount() == 3){		                
+		                if (clickDuration >= MIN_CLICK_DURATION) {
+		                    openSettings();
+		                    longClickActive = false;
+		                    return true;
+		                }
+	            	}
+	            	else if(event.getPointerCount() != 3 && clickDuration >= MIN_CLICK_DURATION){
+	            		braAnusButton.setBackgroundColor(getResources().getColor(color.braAnusBG));
+	    				braAnusButton.setTexts(getResources().getText(string.braAnus));
+	    				braAnusButton.setTextColors(getResources().getColor(color.braAnus));
+	    				id=!id;
+	            	}
+	            }
+	            break;
+	        }
+	        return false;
 		}
 	};
 	
-	
-	// This snippet hides the system bars.
 	private void hideSystemUI() {
 	    // Set the IMMERSIVE flag.
 	    // Set the content to appear under the system bars so that the content
 	    // doesn't resize when the system bars hide and show.
-		getActionBar().hide();
-	    mDecorView.setSystemUiVisibility(
+		isMenuVisible = false;
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.KITKAT){
+			mDecorView.setSystemUiVisibility(
 	    		View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 	    		| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-	            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-	            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-	            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+	            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN	
+	    		| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+	            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar		            
 	            | View.SYSTEM_UI_FLAG_IMMERSIVE);
-	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-	    // Inflate the menu items for use in the action bar
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.main_activity_actions, menu);
-	    return super.onCreateOptionsMenu(menu);
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle presses on the action bar items
-	    switch (item.getItemId()) {
-	        case R.id.action_settings:
-	            openSettings();
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
+		}
+		else{
+			mDecorView.setSystemUiVisibility(
+				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_FULLSCREEN				
+				);
+		}
 	}
 
 	private void openSettings() {
@@ -167,16 +207,16 @@ public class BraEllerAnusActivity extends Activity {
 	
 	public void setLocale(String lang) { 
 		if(!getResources().getConfiguration().locale.toString().startsWith(lang)){
-			
+
 			Intent refresh = getIntent();
 			finish();
-			
+
 			settings = getSharedPreferences("prefs", 0);
-		    SharedPreferences.Editor editor = settings.edit();
-		    editor.putString("savedLoc", lang).commit();
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putString("savedLoc", lang).commit();
 
 			startActivity(refresh); 
 		}
-		} 
+	} 
        
 }

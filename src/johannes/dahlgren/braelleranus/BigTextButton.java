@@ -126,7 +126,7 @@ public class BigTextButton extends Button {
 
 		// figure out what textSize setting would create that height
 		// of text
-		float size = ((target / h) * 95f);
+		float size = ((target / h) * 85f);
 
 		// and set it into the paint
 		mTextPaint.setTextSize(size);

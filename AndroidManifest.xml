@@ -4,7 +4,7 @@
     android:versionCode="4"
     android:versionName="2.1" >
 
-    <uses-sdk android:minSdkVersion="11" 
+    <uses-sdk android:minSdkVersion="14" 
         	  android:targetSdkVersion="19"/>
 
     <application
@@ -18,7 +18,6 @@
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
