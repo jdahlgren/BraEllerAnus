@@ -4,8 +4,15 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
+    <!--
+    Om vi har stora fontstorlekar i TextView-klasser (BigTextButton)
+    finns det ett fel med Hårdvaruaccelerationen, se till att denna View
+    inte hårdvaruaccelereras!
+    http://stackoverflow.com/questions/6253528/font-size-too-large-to-fit-in-cache
+    -->
     <johannes.dahlgren.braelleranus.BigTextButton
         android:id="@+id/imageButton1"
+        android:layerType="software"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="" />
