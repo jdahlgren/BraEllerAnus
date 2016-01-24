@@ -42,7 +42,7 @@ public class BigTextButton extends Button {
 	 * 
 	 * This could be expanded to pull out settings for textColor, etc if desired
 	 * 
-	 * @param attrs
+	 * @param attrs .
 	 */
 
 	private void parseAttrs(AttributeSet attrs) {

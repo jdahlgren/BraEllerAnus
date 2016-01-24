@@ -15,31 +15,26 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
-import johannes.dahlgren.braelleranus.R;
 import johannes.dahlgren.braelleranus.R.color;
 import johannes.dahlgren.braelleranus.R.string;
 
+@SuppressWarnings("deprecation") //TODO: När minSdkVersion = 23 kan denna tas bort
 public class BraEllerAnusActivity extends Activity {
 	
 	private BigTextButton braAnusButton;
 	private boolean id;
 	private View mDecorView;
-	private Handler mHideHandler;
-	private Runnable mHideRunnable;
-	private Locale locale;
 	private SharedPreferences settings;
-	private int currentapiVersion;
 	private boolean isMenuVisible;
-	private boolean longClickActive;
 
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        mHideHandler = new Handler();
-        mHideRunnable = new Runnable() {
+
+        final Handler mHideHandler = new Handler();
+        final Runnable mHideRunnable = new Runnable() {
     		public void run() {
     			hideSystemUI();
     		}
@@ -47,7 +42,6 @@ public class BraEllerAnusActivity extends Activity {
     	
     	mDecorView = getWindow().getDecorView();       
         getActionBar().hide();
-        currentapiVersion = android.os.Build.VERSION.SDK_INT;
         isMenuVisible = false;
 
         hideSystemUI();
@@ -67,7 +61,7 @@ public class BraEllerAnusActivity extends Activity {
         //Handle Locale
         settings = getSharedPreferences("prefs", 0);
         String loc = settings.getString("savedLoc", Locale.getDefault().toString());
-        locale = new Locale(loc); 
+		Locale locale = new Locale(loc);
         
 		Resources res = getResources(); 
 		DisplayMetrics dm = res.getDisplayMetrics(); 
@@ -80,13 +74,12 @@ public class BraEllerAnusActivity extends Activity {
         
         
         id = true;
-        longClickActive = false;
-        
+
         braAnusButton = (BigTextButton) (findViewById(R.id.imageButton1));
         braAnusButton.setBackgroundColor(getResources().getColor(color.braBG));
         braAnusButton.setTexts(getResources().getText(string.bra));
         braAnusButton.setTextColors(getResources().getColor(color.bra));
-        
+
         findViewById(R.id.imageButton1).setOnClickListener(braAnusButtonOnClickHandler);
         findViewById(R.id.imageButton1).setOnTouchListener(braAnusButtonTouchHandler);
     } 
@@ -94,7 +87,7 @@ public class BraEllerAnusActivity extends Activity {
     View.OnClickListener braAnusButtonOnClickHandler = new View.OnClickListener() {    	
         public void onClick(View v) {     
         	if(!isMenuVisible){
-        		if (currentapiVersion >= android.os.Build.VERSION_CODES.KITKAT){
+        		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT){
         			hideSystemUI();
         		}
         	}
@@ -117,20 +110,21 @@ public class BraEllerAnusActivity extends Activity {
 	View.OnTouchListener braAnusButtonTouchHandler = new View.OnTouchListener() {
 		private static final int MIN_CLICK_DURATION = 1000;
 	    private long startClickTime;
-		
+		private boolean longClickActive = false;
+
 		public boolean onTouch(View v, MotionEvent event) {			
 			switch (event.getAction()) {
 	        case MotionEvent.ACTION_UP:
 	            longClickActive = false;
 	            break;
 	        case MotionEvent.ACTION_DOWN:
-	            if (longClickActive == false) {
+	            if (!longClickActive) {
 	                longClickActive = true;
 	                startClickTime = Calendar.getInstance().getTimeInMillis();
 	            }
 	            break;
 	        case MotionEvent.ACTION_MOVE:
-	            if (longClickActive == true) {
+	            if (longClickActive) {
 	            	long clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
 	            	if(event.getPointerCount() == 3){		                
 		                if (clickDuration >= MIN_CLICK_DURATION) {
@@ -139,7 +133,7 @@ public class BraEllerAnusActivity extends Activity {
 		                    return true;
 		                }
 	            	}
-	            	else if(event.getPointerCount() != 3 && clickDuration >= MIN_CLICK_DURATION){
+	            	else if(clickDuration >= MIN_CLICK_DURATION){
 	            		braAnusButton.setBackgroundColor(getResources().getColor(color.braAnusBG));
 	    				braAnusButton.setTexts(getResources().getText(string.braAnus));
 	    				braAnusButton.setTextColors(getResources().getColor(color.braAnus));
@@ -157,7 +151,7 @@ public class BraEllerAnusActivity extends Activity {
 	    // Set the content to appear under the system bars so that the content
 	    // doesn't resize when the system bars hide and show.
 		isMenuVisible = false;
-		if (currentapiVersion >= android.os.Build.VERSION_CODES.KITKAT){
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT){
 			mDecorView.setSystemUiVisibility(
 	    		View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 	    		| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -204,7 +198,7 @@ public class BraEllerAnusActivity extends Activity {
 
 			settings = getSharedPreferences("prefs", 0);
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putString("savedLoc", lang).commit();
+			editor.putString("savedLoc", lang).apply();
 
 			startActivity(refresh); 
 		}
