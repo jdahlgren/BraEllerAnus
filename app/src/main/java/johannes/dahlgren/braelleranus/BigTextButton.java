@@ -9,7 +9,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.widget.Button;
 
-/*Hämtad från https://github.com/catchthecows/BigTextButton*/
+/*HÃ¤mtad frÃ¥n https://github.com/catchthecows/BigTextButton*/
 
 public class BigTextButton extends Button {
 	String mText = "";
