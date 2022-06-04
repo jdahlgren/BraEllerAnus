@@ -1,11 +1,8 @@
 package johannes.dahlgren.braelleranus;
 
-import java.util.Calendar;
-import java.util.Locale;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -15,6 +12,9 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.Calendar;
+import java.util.Locale;
 
 import johannes.dahlgren.braelleranus.R.color;
 import johannes.dahlgren.braelleranus.R.string;
@@ -36,11 +36,7 @@ public class BraEllerAnusActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         final Handler mHideHandler = new Handler();
-        final Runnable mHideRunnable = new Runnable() {
-            public void run() {
-                hideSystemUI();
-            }
-        };
+        final Runnable mHideRunnable = this::hideSystemUI;
 
         mDecorView = getWindow().getDecorView();
         getActionBar().hide();
@@ -48,14 +44,11 @@ public class BraEllerAnusActivity extends Activity {
 
         hideSystemUI();
 
-        mDecorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-
-            public void onSystemUiVisibilityChange(int visibility) {
-                if (visibility == 0) {
-                    //actionBar.show();
-                    isMenuVisible = true;
-                    mHideHandler.postDelayed(mHideRunnable, 5000);
-                }
+        mDecorView.setOnSystemUiVisibilityChangeListener(visibility -> {
+            if (visibility == 0) {
+                //actionBar.show();
+                isMenuVisible = true;
+                mHideHandler.postDelayed(mHideRunnable, 5000);
             }
         });
 
@@ -77,7 +70,7 @@ public class BraEllerAnusActivity extends Activity {
 
         id = true;
 
-        braAnusButton = (BigTextButton) (findViewById(R.id.imageButton1));
+        braAnusButton = findViewById(R.id.imageButton1);
         braAnusButton.setBackgroundColor(getResources().getColor(color.braBG));
         braAnusButton.setTexts(getResources().getText(string.bra));
         braAnusButton.setTextColors(getResources().getColor(color.bra));
@@ -86,7 +79,7 @@ public class BraEllerAnusActivity extends Activity {
         findViewById(R.id.imageButton1).setOnTouchListener(braAnusButtonTouchHandler);
     }
 
-    View.OnClickListener braAnusButtonOnClickHandler = new View.OnClickListener() {
+    final View.OnClickListener braAnusButtonOnClickHandler = new View.OnClickListener() {
         public void onClick(View v) {
             if (!isMenuVisible) {
                 hideSystemUI();
@@ -104,11 +97,12 @@ public class BraEllerAnusActivity extends Activity {
         }
     };
 
-    View.OnTouchListener braAnusButtonTouchHandler = new View.OnTouchListener() {
+    final View.OnTouchListener braAnusButtonTouchHandler = new View.OnTouchListener() {
         private static final int MIN_CLICK_DURATION = 1000;
         private long startClickTime;
         private boolean longClickActive = false;
 
+        @SuppressLint("ClickableViewAccessibility")
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
@@ -159,18 +153,16 @@ public class BraEllerAnusActivity extends Activity {
     private void openSettings() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.pickLanguage);
-        builder.setItems(R.array.lang, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        setLocale("sv");
-                        break;
-                    case 1:
-                        setLocale("en");
-                        break;
-                    default:
-                        break;
-                }
+        builder.setItems(R.array.lang, (dialog, which) -> {
+            switch (which) {
+                case 0:
+                    setLocale("sv");
+                    break;
+                case 1:
+                    setLocale("en");
+                    break;
+                default:
+                    break;
             }
         });
 
