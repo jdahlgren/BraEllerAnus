@@ -18,7 +18,6 @@ import android.view.View;
 import johannes.dahlgren.braelleranus.R.color;
 import johannes.dahlgren.braelleranus.R.string;
 
-@SuppressWarnings("deprecation") //TODO: När minSdkVersion = 23 kan denna tas bort
 public class BraEllerAnusActivity extends Activity {
 	
 	private BigTextButton braAnusButton;
@@ -87,10 +86,8 @@ public class BraEllerAnusActivity extends Activity {
     View.OnClickListener braAnusButtonOnClickHandler = new View.OnClickListener() {    	
         public void onClick(View v) {     
         	if(!isMenuVisible){
-        		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT){
-        			hideSystemUI();
-        		}
-        	}
+				hideSystemUI();
+			}
         	if(id)
         	{
         		braAnusButton.setBackgroundColor(getResources().getColor(color.anusBG));
@@ -151,22 +148,13 @@ public class BraEllerAnusActivity extends Activity {
 	    // Set the content to appear under the system bars so that the content
 	    // doesn't resize when the system bars hide and show.
 		isMenuVisible = false;
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT){
-			mDecorView.setSystemUiVisibility(
-	    		View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-	    		| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-	            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN	
-	    		| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-	            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar		            
-	            | View.SYSTEM_UI_FLAG_IMMERSIVE);
-		}
-		else{
-			mDecorView.setSystemUiVisibility(
-				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_FULLSCREEN				
-				);
-		}
+		mDecorView.setSystemUiVisibility(
+			View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+			| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+			| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+			| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+			| View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+			| View.SYSTEM_UI_FLAG_IMMERSIVE);
 	}
 
 	private void openSettings() {
